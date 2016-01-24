@@ -17,6 +17,8 @@ package org.traccar.model;
 
 import java.util.Date;
 
+import org.traccar.helper.BitUtil;
+
 public abstract class Event extends Extensible {
 
     // Words separated by dashes (word-second-third)
@@ -50,7 +52,13 @@ public abstract class Event extends Extensible {
     public static final String KEY_RPM = "rpm";
     public static final String KEY_VIN = "vin";
     public static final String KEY_APPROXIMATE = "approximate";
-
+    public static final String KEY_ACTIVATED = "activated";
+    public static final String KEY_LANG = "language";
+    public static final String KEY_RELAY = "relay";
+    public static final String KEY_GPSTRACK = "gps tracking";
+    public static final String KEY_STATUS_ALARMTYPE = "status alarm type";
+    public static final String KEY_ALARMTYPE = "alarm type";
+    
     public static final String KEY_OBD_SPEED = "obd-speed";
     public static final String KEY_OBD_ODOMETER = "obd-odometer";
 

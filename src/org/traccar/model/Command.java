@@ -31,7 +31,8 @@ public class Command extends Extensible {
     public static final String TYPE_REQUEST_PHOTO = "requestPhoto";
     public static final String TYPE_REBOOT_DEVICE = "rebootDevice";
     public static final String TYPE_MOVEMENT_ALARM = "movementAlarm";
-
+    public static final String TYPE_STATUS = "Status";
+    
     public static final String KEY_UNIQUE_ID = "uniqueId";
     public static final String KEY_FREQUENCY = "frequency";
     public static final String KEY_TIMEZONE = "timezone";

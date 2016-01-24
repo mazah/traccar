@@ -26,6 +26,7 @@ import org.traccar.Context;
 import org.traccar.helper.BitUtil;
 import org.traccar.helper.Checksum;
 import org.traccar.helper.DateBuilder;
+import org.traccar.helper.Log;
 import org.traccar.helper.UnitsConverter;
 import org.traccar.model.Event;
 import org.traccar.model.Position;
@@ -63,7 +64,21 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
     public static final int MSG_COMMAND_0 = 0x80;
     public static final int MSG_COMMAND_1 = 0x81;
     public static final int MSG_COMMAND_2 = 0x82;
+    public static final int STATUS_ALARM_SOS = 0x20;    
+    public static final int STATUS_ALARM_BAT = 0x18;
+    public static final int STATUS_ALARM_PWR = 0x10;
+    public static final int STATUS_ALARM_SHOCK = 0x08;
+    public static final int STATUS_ALARM_NORMAL = 0x00;
+    public static final int ALARM_NORMAL = 0x00;
+    public static final int ALARM_SOS = 0x01;    
+    public static final int ALARM_PWR = 0x02;
+    public static final int ALARM_SHOCK = 0x03;
+    public static final int ALARM_FENCEIN = 0x04;
+    public static final int ALARM_FENCEOUT = 0x05;
+    
 
+    
+    
     private static boolean isSupported(int type) {
         return hasGps(type) || hasLbs(type) || hasStatus(type);
     }
@@ -156,11 +171,41 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
 
         int flags = buf.readUnsignedByte();
 
+        position.set(Event.KEY_ACTIVATED, BitUtil.check(flags, 0));
         position.set(Event.KEY_IGNITION, BitUtil.check(flags, 1));
-        // decode other flags
+        position.set(Event.KEY_CHARGE, BitUtil.check(flags, 2));
+        if ((flags & STATUS_ALARM_NORMAL) == STATUS_ALARM_NORMAL) {
+        	position.set(Event.KEY_STATUS_ALARMTYPE, "normal");
+        } else if ((flags & STATUS_ALARM_SHOCK) == STATUS_ALARM_SHOCK) {
+        	position.set(Event.KEY_STATUS_ALARMTYPE, "Shock");
+        } else if ((flags & STATUS_ALARM_PWR) == STATUS_ALARM_PWR) {
+        	position.set(Event.KEY_STATUS_ALARMTYPE, "Power");
+        } else if ((flags & STATUS_ALARM_BAT) == STATUS_ALARM_BAT) {
+        	position.set(Event.KEY_STATUS_ALARMTYPE, "Bat");
+        } else if ((flags & STATUS_ALARM_SOS) == STATUS_ALARM_SOS) {
+        	position.set(Event.KEY_STATUS_ALARMTYPE, "SOS");
+        }
+        position.set(Event.KEY_ALARMTYPE, BitUtil.check(flags, 3));
+        position.set(Event.KEY_GPSTRACK, BitUtil.check(flags, 6));
+        position.set(Event.KEY_RELAY, BitUtil.check(flags, 7));
 
         position.set(Event.KEY_POWER, buf.readUnsignedByte());
         position.set(Event.KEY_GSM, buf.readUnsignedByte());
+        int alarm = buf.readUnsignedByte();
+        if ((alarm & ALARM_NORMAL) == ALARM_NORMAL) {
+        	position.set(Event.KEY_ALARMTYPE, "normal");
+        } else if ((alarm & ALARM_SHOCK) == ALARM_SHOCK) {
+        	position.set(Event.KEY_ALARMTYPE, "Shock");
+        } else if ((alarm & ALARM_PWR) == ALARM_PWR) {
+        	position.set(Event.KEY_ALARMTYPE, "Power");
+        } else if ((alarm & ALARM_SOS) == ALARM_SOS) {
+        	position.set(Event.KEY_ALARMTYPE, "SOS");
+        } else if ((alarm & ALARM_FENCEIN) == ALARM_FENCEIN) {
+        	position.set(Event.KEY_ALARMTYPE, "Fence IN");
+        } else if ((alarm & ALARM_FENCEOUT) == ALARM_FENCEOUT) {
+        	position.set(Event.KEY_ALARMTYPE, "Fence OUT");
+        }
+        position.set(Event.KEY_LANG, buf.readUnsignedByte());
     }
 
     @Override
@@ -177,7 +222,7 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
         int dataLength = length - 5;
 
         int type = buf.readUnsignedByte();
-
+        
         if (type == MSG_LOGIN) {
 
             String imei = ChannelBuffers.hexDump(buf.readBytes(8)).substring(1);
@@ -207,6 +252,7 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
             if (isSupported(type)) {
 
                 Position position = new Position();
+                position.setType(Integer.toString(type));
                 position.setDeviceId(getDeviceId());
                 position.setProtocol(getProtocolName());
 

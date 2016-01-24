@@ -30,5 +30,8 @@ Ext.define('Traccar.store.CommandTypes', {
     }, {
         key: 'engineResume',
         name: Strings.commandEngineResume
+    }, {
+        key: 'Status',
+        name: Strings.commandStatus
     }]
 });

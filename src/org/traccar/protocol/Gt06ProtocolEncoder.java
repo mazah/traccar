@@ -59,6 +59,8 @@ public class Gt06ProtocolEncoder extends BaseProtocolEncoder {
                 return encodeContent("Relay,1#");
             case Command.TYPE_ENGINE_RESUME:
                 return encodeContent("Relay,0#");
+            case Command.TYPE_STATUS:
+                return encodeContent("Status#");
             default:
                 Log.warning(new UnsupportedOperationException(command.getType()));
                 break;
