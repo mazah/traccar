@@ -79,5 +79,7 @@
     "commandEngineStop": "Engine Stop",
     "commandEngineResume": "Engine Resume",
     "commandFrequency": "Frequency",
+    "commandCustom": "Custom Command",
+    "commandStatus": "Status Command",
     "commandUnit": "Unit"
 }

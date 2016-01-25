@@ -33,5 +33,8 @@ Ext.define('Traccar.store.CommandTypes', {
     }, {
         key: 'Status',
         name: Strings.commandStatus
+    }, {
+        key: 'customCommand',
+        name: Strings.commandCustom
     }]
 });

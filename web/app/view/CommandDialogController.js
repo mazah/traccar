@@ -21,6 +21,8 @@ Ext.define('Traccar.view.CommandDialogController', {
     onSelect: function (selected) {
         this.lookupReference('paramPositionPeriodic').setHidden(
             selected.getValue() !== 'positionPeriodic');
+        this.lookupReference('paramCustomCommand').setHidden(
+                selected.getValue() !== 'customCommand');
     },
 
     onSendClick: function (button) {
@@ -37,6 +39,13 @@ Ext.define('Traccar.view.CommandDialogController', {
 
             record.set('attributes', {
                 frequency: value
+            });
+        } else if (record.get('type') === 'customCommand') {
+            attributes = this.lookupReference('paramCustomCommand');
+            value = attributes.down('textfield[name="cmd"]').getValue();
+
+            record.set('attributes', {
+                command: value
             });
         }
 

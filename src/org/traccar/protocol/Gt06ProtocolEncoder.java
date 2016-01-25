@@ -53,7 +53,6 @@ public class Gt06ProtocolEncoder extends BaseProtocolEncoder {
 
     @Override
     protected Object encodeCommand(Command command) {
-
         switch (command.getType()) {
             case Command.TYPE_ENGINE_STOP:
                 return encodeContent("Relay,1#");
@@ -61,6 +60,8 @@ public class Gt06ProtocolEncoder extends BaseProtocolEncoder {
                 return encodeContent("Relay,0#");
             case Command.TYPE_STATUS:
                 return encodeContent("Status#");
+            case Command.TYPE_CUSTOM:
+                return encodeContent((String) command.getAttributes().get(Command.KEY_CMD));
             default:
                 Log.warning(new UnsupportedOperationException(command.getType()));
                 break;

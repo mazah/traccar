@@ -58,6 +58,7 @@ public abstract class Event extends Extensible {
     public static final String KEY_GPSTRACK = "gps tracking";
     public static final String KEY_STATUS_ALARMTYPE = "status alarm type";
     public static final String KEY_ALARMTYPE = "alarm type";
+    public static final String KEY_RESPONSE = "Command response";
     
     public static final String KEY_OBD_SPEED = "obd-speed";
     public static final String KEY_OBD_ODOMETER = "obd-odometer";

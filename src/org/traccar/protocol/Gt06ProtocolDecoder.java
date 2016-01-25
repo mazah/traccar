@@ -80,7 +80,7 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
     
     
     private static boolean isSupported(int type) {
-        return hasGps(type) || hasLbs(type) || hasStatus(type);
+        return hasGps(type) || hasLbs(type) || hasStatus(type) || hasMsg(type);
     }
 
     private static boolean hasGps(int type) {
@@ -97,6 +97,10 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
     private static boolean hasStatus(int type) {
         return type == MSG_STATUS || type == MSG_LBS_STATUS
                 || type == MSG_GPS_LBS_STATUS_1 || type == MSG_GPS_LBS_STATUS_2 || type == MSG_GPS_LBS_STATUS_3;
+    }
+    
+    private static boolean hasMsg(int type) {
+    	return type == MSG_STRING;
     }
 
     private static void sendResponse(Channel channel, int type, int index) {
@@ -207,6 +211,14 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
         }
         position.set(Event.KEY_LANG, buf.readUnsignedByte());
     }
+    
+    private void decodeMsg(Position position, ChannelBuffer buf) {
+    	int cmdResponseLength = buf.readUnsignedByte(); // Command length
+    	int serverFlag = buf.readUnsignedShort(); //Not implemented
+    	String cmdResponseString = new String(buf.readBytes(cmdResponseLength-4).array());
+    	Log.debug(cmdResponseString);
+    	position.set(Event.KEY_RESPONSE, cmdResponseString);
+    }
 
     @Override
     protected Object decode(
@@ -268,6 +280,10 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
 
                 if (hasStatus(type)) {
                     decodeStatus(position, buf);
+                }
+                
+                if (hasMsg(type)) {
+                	decodeMsg(position, buf);
                 }
 
                 if (type == MSG_GPS_LBS_1 && buf.readableBytes() == 4 + 6) {
