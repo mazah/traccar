@@ -12,6 +12,15 @@ public class XexunProtocolDecoderTest extends ProtocolTest {
         XexunProtocolDecoder decoder = new XexunProtocolDecoder(new XexunProtocol(), false);
 
         verifyPosition(decoder, text(
+                "GPRMC,113518.000,A,5303.4150,N,10.2368,E,60.73,207.42,260216,00,0000.0,A*74,F,,imei:351525018007873,"));
+
+        verifyPosition(decoder, text(
+                "GPRMC,215853.000,A,5304.9600,N,6.7907,E,1.43,80.67,250216,00,0000.0,A*47,F,,imei:351525018007873,"));
+
+        verifyPosition(decoder, text(
+                "GPRMC,121535.000,A,5417.2666,N,04822.1264,E,1.452,30.42,031014,0.0,A*4D\r\n,L,imei:355227042011730,"));
+
+        verifyPosition(decoder, text(
                 "GPRMC,150120.000,A,3346.4463,S,15057.3083,E,0.0,117.4,010911,,,A*76,F,imei:351525010943661,"),
                 position("2011-09-01 15:01:20.000", true, -33.77411, 150.95514));
 

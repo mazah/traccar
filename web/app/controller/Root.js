@@ -116,6 +116,7 @@ Ext.define('Traccar.controller.Root', {
             if (data.positions) {
                 array = data.positions;
                 store = Ext.getStore('LatestPositions');
+                Ext.toast("Command response will be here");
                 for (i = 0; i < array.length; i++) {
                     entity = store.findRecord('deviceId', array[i].deviceId, 0, false, false, true);
                     if (entity) {

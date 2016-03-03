@@ -23,6 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 
 import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.server.ConnectionFactory;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.SessionManager;
 import org.eclipse.jetty.server.handler.ErrorHandler;
@@ -65,6 +68,13 @@ public class WebServer {
             server = new Server(port);
         } else {
             server = new Server(new InetSocketAddress(address, port));
+        }
+        for(Connector y : server.getConnectors()) {
+            for(ConnectionFactory x  : y.getConnectionFactories()) {
+                if(x instanceof HttpConnectionFactory) {
+                    ((HttpConnectionFactory)x).getHttpConfiguration().setSendServerVersion(false);
+                }
+            }
         }
     }
 

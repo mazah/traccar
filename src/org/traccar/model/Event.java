@@ -31,6 +31,7 @@ public abstract class Event extends Extensible {
     public static final String KEY_ALARM = "alarm";
     public static final String KEY_STATUS = "status";
     public static final String KEY_ODOMETER = "odometer";
+    public static final String KEY_HOURS = "hours";
     public static final String KEY_INPUT = "input";
     public static final String KEY_OUTPUT = "output";
     public static final String KEY_POWER = "power";
@@ -52,6 +53,7 @@ public abstract class Event extends Extensible {
     public static final String KEY_RPM = "rpm";
     public static final String KEY_VIN = "vin";
     public static final String KEY_APPROXIMATE = "approximate";
+<<<<<<< HEAD
     public static final String KEY_ACTIVATED = "activated";
     public static final String KEY_LANG = "language";
     public static final String KEY_RELAY = "relay";
@@ -60,6 +62,8 @@ public abstract class Event extends Extensible {
     public static final String KEY_ALARMTYPE = "alarm type";
     public static final String KEY_RESPONSE = "Command response";
     
+    public static final String KEY_THROTTLE = "throttle";
+
     public static final String KEY_OBD_SPEED = "obd-speed";
     public static final String KEY_OBD_ODOMETER = "obd-odometer";
 
