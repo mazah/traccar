@@ -53,7 +53,6 @@ public abstract class Event extends Extensible {
     public static final String KEY_RPM = "rpm";
     public static final String KEY_VIN = "vin";
     public static final String KEY_APPROXIMATE = "approximate";
-<<<<<<< HEAD
     public static final String KEY_ACTIVATED = "activated";
     public static final String KEY_LANG = "language";
     public static final String KEY_RELAY = "relay";
