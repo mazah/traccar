@@ -24,7 +24,7 @@
     <entry key='database.user'>sa</entry>
     <entry key='database.password'></entry>
 
-    <entry key='database.changelog'>/opt/traccar/data/db.changelog-master.xml</entry>
+    <entry key='database.changelog'>/opt/traccar/data/changelog-master.xml</entry>
 
     <entry key='database.selectServers'>
         SELECT * FROM server;
@@ -37,12 +37,12 @@
         map = :map,
         bingKey = :bingKey,
         mapUrl = :mapUrl,
-        language = :language,
         distanceUnit = :distanceUnit,
         speedUnit = :speedUnit,
         latitude = :latitude,
         longitude = :longitude,
-        zoom = :zoom
+        zoom = :zoom,
+        twelveHourFormat = :twelveHourFormat
         WHERE id = :id;
     </entry>
 
@@ -61,8 +61,8 @@
     </entry>
 
     <entry key='database.insertUser'>
-        INSERT INTO users (name, email, hashedPassword, salt, admin)
-        VALUES (:name, :email, :hashedPassword, :salt, :admin);
+        INSERT INTO users (name, email, hashedPassword, salt, admin, map, distanceUnit, speedUnit, latitude, longitude, zoom, twelveHourFormat)
+        VALUES (:name, :email, :hashedPassword, :salt, :admin, :map, :distanceUnit, :speedUnit, :latitude, :longitude, :zoom, :twelveHourFormat);
     </entry>
 
     <entry key='database.updateUser'>
@@ -71,7 +71,6 @@
         email = :email,
         admin = :admin,
         map = :map,
-        language = :language,
         distanceUnit = :distanceUnit,
         speedUnit = :speedUnit,
         latitude = :latitude,
@@ -124,13 +123,37 @@
         DELETE FROM user_device WHERE userId = :userId AND deviceId = :deviceId;
     </entry>
 
+    <entry key='database.selectGroupsAll'>
+        SELECT * FROM groups;
+    </entry>
+
+    <entry key='database.insertGroup'>
+        INSERT INTO groups (name) VALUES (:name);
+    </entry>
+
+    <entry key='database.updateGroup'>
+        UPDATE groups SET name = :name, groupId = :groupId WHERE id = :id;
+    </entry>
+
+    <entry key='database.deleteGroup'>
+        DELETE FROM groups WHERE id = :id;
+    </entry>
+
+    <entry key='database.linkGroup'>
+        INSERT INTO user_group (userId, groupId) VALUES (:userId, :groupId);
+    </entry>
+
+    <entry key='database.unlinkGroup'>
+        DELETE FROM user_group WHERE userId = :userId AND groupId = :groupId;
+    </entry>
+
     <entry key='database.selectPositions'>
         SELECT * FROM positions WHERE deviceId = :deviceId AND fixTime BETWEEN :from AND :to ORDER BY fixTime;
     </entry>
 
     <entry key='database.insertPosition'>
         INSERT INTO positions (deviceId, protocol, serverTime, deviceTime, fixTime, valid, latitude, longitude, altitude, speed, course, address, attributes)
-        VALUES (:deviceId, :protocol, :now, :time, :time, :valid, :latitude, :longitude, :altitude, :speed, :course, :address, :attributes);
+        VALUES (:deviceId, :protocol, :now, :deviceTime, :fixTime, :valid, :latitude, :longitude, :altitude, :speed, :course, :address, :attributes);
     </entry>
 
     <entry key='database.selectLatestPositions'>
@@ -210,7 +233,7 @@
     <entry key='eelink.port'>5064</entry>
     <entry key='box.port'>5065</entry>
     <entry key='freedom.port'>5066</entry>
-    <entry key='telik.port'>5067</entry>
+    <entry key='telic.port'>5067</entry>
     <entry key='trackbox.port'>5068</entry>
     <entry key='visiontek.port'>5069</entry>
     <entry key='orion.port'>5070</entry>
@@ -222,7 +245,7 @@
     <entry key='xt013.port'>5076</entry>
     <entry key='autofon.port'>5077</entry>
     <entry key='gosafe.port'>5078</entry>
-    <entry key='autofon45.port'>5079</entry>
+    <entry key='tt8850.port'>5079</entry>
     <entry key='bce.port'>5080</entry>
     <entry key='xirgo.port'>5081</entry>
     <entry key='calamp.port'>5082</entry>
@@ -244,5 +267,14 @@
     <entry key='thinkrace.port'>5098</entry>
     <entry key='pathaway.port'>5099</entry>
     <entry key='arnavi.port'>5100</entry>
+    <entry key='nvs.port'>5101</entry>
+    <entry key='kenji.port'>5102</entry>
+    <entry key='astra.port'>5103</entry>
+    <entry key='homtecs.port'>5104</entry>
+    <entry key='fox.port'>5105</entry>
+    <entry key='gnx.port'>5106</entry>
+    <entry key='arknav.port'>5107</entry>
+    <entry key='supermate.port'>5108</entry>
+    <entry key='appello.port'>5109</entry>
 
 </properties>

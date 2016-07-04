@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Anton Tananaev (anton.tananaev@gmail.com)
+ * Copyright 2015 - 2016 Anton Tananaev (anton.tananaev@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.traccar.helper.BitUtil;
 public abstract class Event extends Extensible {
 
     // Words separated by dashes (word-second-third)
+    public static final String KEY_ORIGINAL = "raw";
     public static final String KEY_INDEX = "index";
     public static final String KEY_HDOP = "hdop";
     public static final String KEY_SATELLITES = "sat";
@@ -31,6 +32,7 @@ public abstract class Event extends Extensible {
     public static final String KEY_ALARM = "alarm";
     public static final String KEY_STATUS = "status";
     public static final String KEY_ODOMETER = "odometer";
+    public static final String KEY_HOURS = "hours";
     public static final String KEY_INPUT = "input";
     public static final String KEY_OUTPUT = "output";
     public static final String KEY_POWER = "power";
@@ -59,7 +61,8 @@ public abstract class Event extends Extensible {
     public static final String KEY_STATUS_ALARMTYPE = "status alarm type";
     public static final String KEY_ALARMTYPE = "alarm type";
     public static final String KEY_RESPONSE = "Command response";
-    
+    public static final String KEY_THROTTLE = "throttle";
+    public static final String KEY_MOTION = "motion";
     public static final String KEY_OBD_SPEED = "obd-speed";
     public static final String KEY_OBD_ODOMETER = "obd-odometer";
 

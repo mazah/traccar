@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 - 2015 Anton Tananaev (anton.tananaev@gmail.com)
+ * Copyright 2012 - 2016 Anton Tananaev (anton.tananaev@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,13 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
@@ -36,14 +39,15 @@ import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
 import liquibase.resource.ResourceAccessor;
 import org.traccar.Config;
+import org.traccar.Context;
 import org.traccar.helper.Log;
 import org.traccar.model.Device;
-import org.traccar.model.MiscFormatter;
-import org.traccar.model.Permission;
+import org.traccar.model.Group;
+import org.traccar.model.GroupPermission;
+import org.traccar.model.DevicePermission;
 import org.traccar.model.Position;
 import org.traccar.model.Server;
 import org.traccar.model.User;
-import org.traccar.web.AsyncServlet;
 
 public class DataManager implements IdentityManager {
 
@@ -53,10 +57,16 @@ public class DataManager implements IdentityManager {
 
     private DataSource dataSource;
 
+    private final long dataRefreshDelay;
+
+    private final ReadWriteLock devicesLock = new ReentrantReadWriteLock();
     private final Map<Long, Device> devicesById = new HashMap<>();
     private final Map<String, Device> devicesByUniqueId = new HashMap<>();
     private long devicesLastUpdate;
-    private final long devicesRefreshDelay;
+
+    private final ReadWriteLock groupsLock = new ReentrantReadWriteLock();
+    private final Map<Long, Group> groupsById = new HashMap<>();
+    private long groupsLastUpdate;
 
     public DataManager(Config config) throws Exception {
         this.config = config;
@@ -64,7 +74,7 @@ public class DataManager implements IdentityManager {
         initDatabase();
         initDatabaseSchema();
 
-        devicesRefreshDelay = config.getLong("database.refreshDelay", DEFAULT_REFRESH_DELAY) * 1000;
+        dataRefreshDelay = config.getLong("database.refreshDelay", DEFAULT_REFRESH_DELAY) * 1000;
     }
 
     public DataSource getDataSource() {
@@ -112,32 +122,122 @@ public class DataManager implements IdentityManager {
     }
 
     private void updateDeviceCache(boolean force) throws SQLException {
-        if (System.currentTimeMillis() - devicesLastUpdate > devicesRefreshDelay || force) {
-            devicesById.clear();
-            devicesByUniqueId.clear();
-            for (Device device : getAllDevices()) {
-                devicesById.put(device.getId(), device);
-                devicesByUniqueId.put(device.getUniqueId(), device);
+        boolean needWrite;
+        devicesLock.readLock().lock();
+        try {
+            needWrite = force || System.currentTimeMillis() - devicesLastUpdate > dataRefreshDelay;
+        } finally {
+            devicesLock.readLock().unlock();
+        }
+
+        if (needWrite) {
+            devicesLock.writeLock().lock();
+            try {
+                if (force || System.currentTimeMillis() - devicesLastUpdate > dataRefreshDelay) {
+                    devicesById.clear();
+                    devicesByUniqueId.clear();
+                    for (Device device : getAllDevices()) {
+                        devicesById.put(device.getId(), device);
+                        devicesByUniqueId.put(device.getUniqueId(), device);
+                    }
+                    devicesLastUpdate = System.currentTimeMillis();
+                }
+            } finally {
+                devicesLock.writeLock().unlock();
             }
-            devicesLastUpdate = System.currentTimeMillis();
         }
     }
 
     @Override
     public Device getDeviceById(long id) {
+        boolean forceUpdate;
+        devicesLock.readLock().lock();
         try {
-            updateDeviceCache(!devicesById.containsKey(id));
+            forceUpdate = !devicesById.containsKey(id);
+        } finally {
+            devicesLock.readLock().unlock();
+        }
+
+        try {
+            updateDeviceCache(forceUpdate);
         } catch (SQLException e) {
             Log.warning(e);
         }
-        return devicesById.get(id);
+
+        devicesLock.readLock().lock();
+        try {
+            return devicesById.get(id);
+        } finally {
+            devicesLock.readLock().unlock();
+        }
     }
 
     @Override
     public Device getDeviceByUniqueId(String uniqueId) throws SQLException {
-        updateDeviceCache(
-                !devicesByUniqueId.containsKey(uniqueId) && !config.getBoolean("database.ignoreUnknown"));
-        return devicesByUniqueId.get(uniqueId);
+        boolean forceUpdate;
+        devicesLock.readLock().lock();
+        try {
+            forceUpdate = !devicesByUniqueId.containsKey(uniqueId) && !config.getBoolean("database.ignoreUnknown");
+        } finally {
+            devicesLock.readLock().unlock();
+        }
+
+        updateDeviceCache(forceUpdate);
+
+        devicesLock.readLock().lock();
+        try {
+            return devicesByUniqueId.get(uniqueId);
+        } finally {
+            devicesLock.readLock().unlock();
+        }
+    }
+
+    private void updateGroupCache(boolean force) throws SQLException {
+        boolean needWrite;
+        groupsLock.readLock().lock();
+        try {
+            needWrite = force || System.currentTimeMillis() - groupsLastUpdate > dataRefreshDelay;
+        } finally {
+            groupsLock.readLock().unlock();
+        }
+
+        if (needWrite) {
+            groupsLock.writeLock().lock();
+            try {
+                if (force || System.currentTimeMillis() - groupsLastUpdate > dataRefreshDelay) {
+                    groupsById.clear();
+                    for (Group group : getAllGroups()) {
+                        groupsById.put(group.getId(), group);
+                    }
+                    groupsLastUpdate = System.currentTimeMillis();
+                }
+            } finally {
+                groupsLock.writeLock().unlock();
+            }
+        }
+    }
+
+    public Group getGroupById(long id) {
+        boolean forceUpdate;
+        groupsLock.readLock().lock();
+        try {
+            forceUpdate = !groupsById.containsKey(id);
+        } finally {
+            groupsLock.readLock().unlock();
+        }
+
+        try {
+            updateGroupCache(forceUpdate);
+        } catch (SQLException e) {
+            Log.warning(e);
+        }
+
+        groupsLock.readLock().lock();
+        try {
+            return groupsById.get(id);
+        } finally {
+            groupsLock.readLock().unlock();
+        }
     }
 
     private String getQuery(String key) {
@@ -208,22 +308,20 @@ public class DataManager implements IdentityManager {
         }
     }
 
-    @Deprecated
-    public void removeUser(User user) throws SQLException {
-        QueryBuilder.create(dataSource, getQuery("database.deleteUser"))
-                .setObject(user)
-                .executeUpdate();
-    }
-
     public void removeUser(long userId) throws SQLException {
         QueryBuilder.create(dataSource, getQuery("database.deleteUser"))
                 .setLong("id", userId)
                 .executeUpdate();
     }
 
-    public Collection<Permission> getPermissions() throws SQLException {
-        return QueryBuilder.create(dataSource, getQuery("database.getPermissionsAll"))
-                .executeQuery(Permission.class);
+    public Collection<DevicePermission> getDevicePermissions() throws SQLException {
+        return QueryBuilder.create(dataSource, getQuery("database.selectDevicePermissions"))
+                .executeQuery(DevicePermission.class);
+    }
+
+    public Collection<GroupPermission> getGroupPermissions() throws SQLException {
+        return QueryBuilder.create(dataSource, getQuery("database.selectGroupPermissions"))
+                .executeQuery(GroupPermission.class);
     }
 
     public Collection<Device> getAllDevices() throws SQLException {
@@ -232,21 +330,25 @@ public class DataManager implements IdentityManager {
     }
 
     public Collection<Device> getDevices(long userId) throws SQLException {
-        return QueryBuilder.create(dataSource, getQuery("database.selectDevices"))
-                .setLong("userId", userId)
-                .executeQuery(Device.class);
+        Collection<Device> devices = new ArrayList<>();
+        for (long id : Context.getPermissionsManager().getDevicePermissions(userId)) {
+            devices.add(getDeviceById(id));
+        }
+        return devices;
     }
 
     public void addDevice(Device device) throws SQLException {
         device.setId(QueryBuilder.create(dataSource, getQuery("database.insertDevice"), true)
                 .setObject(device)
                 .executeUpdate());
+        updateDeviceCache(true);
     }
 
     public void updateDevice(Device device) throws SQLException {
         QueryBuilder.create(dataSource, getQuery("database.updateDevice"))
                 .setObject(device)
                 .executeUpdate();
+        updateDeviceCache(true);
     }
 
     public void updateDeviceStatus(Device device) throws SQLException {
@@ -255,19 +357,11 @@ public class DataManager implements IdentityManager {
                 .executeUpdate();
     }
 
-    @Deprecated
-    public void removeDevice(Device device) throws SQLException {
-        QueryBuilder.create(dataSource, getQuery("database.deleteDevice"))
-                .setObject(device)
-                .executeUpdate();
-        AsyncServlet.sessionRefreshDevice(device.getId());
-    }
-
     public void removeDevice(long deviceId) throws SQLException {
         QueryBuilder.create(dataSource, getQuery("database.deleteDevice"))
                 .setLong("id", deviceId)
                 .executeUpdate();
-        AsyncServlet.sessionRefreshDevice(deviceId);
+        updateDeviceCache(true);
     }
 
     public void linkDevice(long userId, long deviceId) throws SQLException {
@@ -275,7 +369,6 @@ public class DataManager implements IdentityManager {
                 .setLong("userId", userId)
                 .setLong("deviceId", deviceId)
                 .executeUpdate();
-        AsyncServlet.sessionRefreshUser(userId);
     }
 
     public void unlinkDevice(long userId, long deviceId) throws SQLException {
@@ -283,7 +376,53 @@ public class DataManager implements IdentityManager {
                 .setLong("userId", userId)
                 .setLong("deviceId", deviceId)
                 .executeUpdate();
-        AsyncServlet.sessionRefreshUser(userId);
+    }
+
+    public Collection<Group> getAllGroups() throws SQLException {
+        return QueryBuilder.create(dataSource, getQuery("database.selectGroupsAll"))
+                .executeQuery(Group.class);
+    }
+
+    public Collection<Group> getGroups(long userId) throws SQLException {
+        Collection<Group> groups = new ArrayList<>();
+        for (long id : Context.getPermissionsManager().getGroupPermissions(userId)) {
+            groups.add(getGroupById(id));
+        }
+        return groups;
+    }
+
+    public void addGroup(Group group) throws SQLException {
+        group.setId(QueryBuilder.create(dataSource, getQuery("database.insertGroup"), true)
+                .setObject(group)
+                .executeUpdate());
+        updateGroupCache(true);
+    }
+
+    public void updateGroup(Group group) throws SQLException {
+        QueryBuilder.create(dataSource, getQuery("database.updateGroup"))
+                .setObject(group)
+                .executeUpdate();
+        updateGroupCache(true);
+    }
+
+    public void removeGroup(long groupId) throws SQLException {
+        QueryBuilder.create(dataSource, getQuery("database.deleteGroup"))
+                .setLong("id", groupId)
+                .executeUpdate();
+    }
+
+    public void linkGroup(long userId, long groupId) throws SQLException {
+        QueryBuilder.create(dataSource, getQuery("database.linkGroup"))
+                .setLong("userId", userId)
+                .setLong("groupId", groupId)
+                .executeUpdate();
+    }
+
+    public void unlinkGroup(long userId, long groupId) throws SQLException {
+        QueryBuilder.create(dataSource, getQuery("database.unlinkGroup"))
+                .setLong("userId", userId)
+                .setLong("groupId", groupId)
+                .executeUpdate();
     }
 
     public Collection<Position> getPositions(long deviceId, Date from, Date to) throws SQLException {
@@ -298,11 +437,6 @@ public class DataManager implements IdentityManager {
         position.setId(QueryBuilder.create(dataSource, getQuery("database.insertPosition"), true)
                 .setDate("now", new Date())
                 .setObject(position)
-                .setDate("time", position.getFixTime()) // tmp
-                .setLong("device_id", position.getDeviceId()) // tmp
-                .setLong("power", 0) // tmp
-                .setString("extended_info", MiscFormatter.toXmlString(position.getAttributes())) // tmp
-                .setString("other", MiscFormatter.toXmlString(position.getAttributes())) // tmp
                 .executeUpdate());
     }
 
@@ -310,11 +444,6 @@ public class DataManager implements IdentityManager {
         QueryBuilder.create(dataSource, getQuery("database.updateLatestPosition"))
                 .setDate("now", new Date())
                 .setObject(position)
-                .setDate("time", position.getFixTime()) // tmp
-                .setLong("device_id", position.getDeviceId()) // tmp
-                .setLong("power", 0) // tmp
-                .setString("extended_info", MiscFormatter.toXmlString(position.getAttributes())) // tmp
-                .setString("other", MiscFormatter.toXmlString(position.getAttributes())) // tmp
                 .executeUpdate();
     }
 
