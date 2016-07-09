@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Anton Tananaev (anton.tananaev@gmail.com)
+ * Copyright 2016 Anton Tananaev (anton.tananaev@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.Date;
 
 import org.traccar.helper.BitUtil;
 
-public abstract class Event extends Extensible {
+public class Event extends Message {
 
     // Words separated by dashes (word-second-third)
     public static final String KEY_INDEX = "index";
@@ -78,19 +78,34 @@ public abstract class Event extends Extensible {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public Event(String type, long deviceId, long positionId) {
+        this.setType(type);
+        this.setDeviceId(deviceId);
+        this.setPositionId(positionId);
+        this.serverTime = new Date();
     }
 
-    private String protocol;
-
-    public String getProtocol() {
-        return protocol;
+    public Event(String type, long deviceId) {
+        this.setType(type);
+        this.setDeviceId(deviceId);
+        this.serverTime = new Date();
     }
 
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
+    public Event() {
     }
+
+    public static final String TYPE_COMMAND_RESULT = "commandResult";
+
+    public static final String TYPE_DEVICE_ONLINE = "deviceOnline";
+    public static final String TYPE_DEVICE_OFFLINE = "deviceOffline";
+
+    public static final String TYPE_DEVICE_MOVING = "deviceMoving";
+    public static final String TYPE_DEVICE_STOPPED = "deviceStopped";
+
+    public static final String TYPE_DEVICE_OVERSPEED = "deviceOverspeed";
+
+    public static final String TYPE_GEOFENCE_ENTER = "geofenceEnter";
+    public static final String TYPE_GEOFENCE_EXIT = "geofenceExit";
 
     private Date serverTime;
 
@@ -110,22 +125,24 @@ public abstract class Event extends Extensible {
         }
     }
 
-    private Date deviceTime;
+    private long positionId;
 
-    public Date getDeviceTime() {
-        if (deviceTime != null) {
-            return new Date(deviceTime.getTime());
-        } else {
-            return null;
-        }
+    public long getPositionId() {
+        return positionId;
     }
 
-    public void setDeviceTime(Date deviceTime) {
-        if (deviceTime != null) {
-            this.deviceTime = new Date(deviceTime.getTime());
-        } else {
-            this.deviceTime = null;
-        }
+    public void setPositionId(long positionId) {
+        this.positionId = positionId;
+    }
+
+    private long geofenceId = 0;
+
+    public long getGeofenceId() {
+        return geofenceId;
+    }
+
+    public void setGeofenceId(long geofenceId) {
+        this.geofenceId = geofenceId;
     }
 
 }

@@ -25,6 +25,7 @@ import org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler;
 import org.jboss.netty.handler.timeout.IdleStateEvent;
 import org.traccar.helper.Log;
 import org.traccar.model.Position;
+
 import java.text.SimpleDateFormat;
 
 public class MainEventHandler extends IdleStateAwareChannelHandler {
@@ -36,10 +37,12 @@ public class MainEventHandler extends IdleStateAwareChannelHandler {
 
             Position position = (Position) e.getMessage();
 
+            String uniqueId = Context.getDataManager().getDeviceById(position.getDeviceId()).getUniqueId();
+
             // Log position
             StringBuilder s = new StringBuilder();
             s.append(formatChannel(e.getChannel())).append(" ");
-            s.append("id: ").append(position.getDeviceId()).append(", ");
+            s.append("id: ").append(uniqueId).append(", ");
             s.append("time: ").append(
                     new SimpleDateFormat(Log.DATE_FORMAT).format(position.getFixTime())).append(", ");
             s.append("lat: ").append(String.format("%.5f", position.getLatitude())).append(", ");
@@ -47,6 +50,10 @@ public class MainEventHandler extends IdleStateAwareChannelHandler {
             s.append("speed: ").append(String.format("%.1f", position.getSpeed())).append(", ");
             s.append("course: ").append(String.format("%.1f", position.getCourse())).append(", ");
             s.append("msgtype: ").append(position.getType());
+            Object cmdResult = position.getAttributes().get(Position.KEY_RESULT);
+            if (cmdResult != null) {
+                s.append(", result: ").append(cmdResult);
+            }
             Log.info(s.toString());
 
             Position lastPosition = Context.getConnectionManager().getLastPosition(position.getDeviceId());

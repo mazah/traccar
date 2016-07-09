@@ -3,6 +3,7 @@ goog.provide('ol.style.Arrow');
 goog.require('goog.asserts');
 goog.require('ol');
 goog.require('ol.color');
+goog.require('ol.dom');
 goog.require('ol.has');
 goog.require('ol.render.canvas');
 goog.require('ol.style.AtlasManager');
@@ -122,7 +123,7 @@ ol.style.Arrow = function(options) {
   var rotateWithView = options.rotateWithView !== undefined ?
       options.rotateWithView : false;
 
-  goog.base(this, {
+  ol.style.Image.call(this, {
     opacity: 1,
     rotateWithView: rotateWithView,
     rotation: options.rotation !== undefined ? options.rotation : 0,
@@ -131,7 +132,7 @@ ol.style.Arrow = function(options) {
   });
 
 };
-goog.inherits(ol.style.Arrow, ol.style.Image);
+ol.inherits(ol.style.Arrow, ol.style.Image);
 
 
 /**
@@ -281,7 +282,7 @@ ol.style.Arrow.prototype.unlistenImageChange = ol.nullFunction;
  *   miterLimit: number
  * }}
  */
-ol.style.Arrow.RenderOptions;
+ol.ArrowRenderOptions;
 
 
 /**
@@ -323,7 +324,7 @@ ol.style.Arrow.prototype.render_ = function(atlasManager) {
 
   var size = 2 * (this.radius_ + strokeWidth) + 1;
 
-  /** @type {ol.style.Arrow.RenderOptions} */
+  /** @type {ol.ArrowRenderOptions} */
   var renderOptions = {
     strokeStyle: strokeStyle,
     strokeWidth: strokeWidth,
@@ -336,18 +337,13 @@ ol.style.Arrow.prototype.render_ = function(atlasManager) {
 
   if (atlasManager === undefined) {
     // no atlas manager is used, create a new canvas
-    this.canvas_ = /** @type {HTMLCanvasElement} */
-        (document.createElement('CANVAS'));
-
-    this.canvas_.height = size;
-    this.canvas_.width = size;
+    var context = ol.dom.createCanvasContext2D(size, size);
+    this.canvas_ = context.canvas;
 
     // canvas.width and height are rounded to the closest integer
     size = this.canvas_.width;
     imageSize = size;
 
-    var context = /** @type {CanvasRenderingContext2D} */
-        (this.canvas_.getContext('2d'));
     this.draw_(renderOptions, context, 0, 0);
 
     this.createHitDetectionCanvas_(renderOptions);
@@ -391,7 +387,7 @@ ol.style.Arrow.prototype.render_ = function(atlasManager) {
 
 /**
  * @private
- * @param {ol.style.Arrow.RenderOptions} renderOptions Render options.
+ * @param {ol.ArrowRenderOptions} renderOptions Render options.
  * @param {CanvasRenderingContext2D} context The rendering context.
  * @param {number} x The origin for the symbol (x).
  * @param {number} y The origin for the symbol (y).
@@ -442,7 +438,7 @@ ol.style.Arrow.prototype.draw_ = function(renderOptions, context, x, y) {
 
 /**
  * @private
- * @param {ol.style.Arrow.RenderOptions} renderOptions Render options.
+ * @param {ol.ArrowRenderOptions} renderOptions Render options.
  */
 ol.style.Arrow.prototype.createHitDetectionCanvas_ = function(renderOptions) {
   this.hitDetectionImageSize_ = [renderOptions.size, renderOptions.size];
@@ -453,22 +449,16 @@ ol.style.Arrow.prototype.createHitDetectionCanvas_ = function(renderOptions) {
 
   // if no fill style is set, create an extra hit-detection image with a
   // default fill style
-  this.hitDetectionCanvas_ = /** @type {HTMLCanvasElement} */
-      (document.createElement('CANVAS'));
-  var canvas = this.hitDetectionCanvas_;
+  var context = ol.dom.createCanvasContext2D(renderOptions.size, renderOptions.size);
+  this.hitDetectionCanvas_ = context.canvas;
 
-  canvas.height = renderOptions.size;
-  canvas.width = renderOptions.size;
-
-  var context = /** @type {CanvasRenderingContext2D} */
-      (canvas.getContext('2d'));
   this.drawHitDetectionCanvas_(renderOptions, context, 0, 0);
 };
 
 
 /**
  * @private
- * @param {ol.style.Arrow.RenderOptions} renderOptions Render options.
+ * @param {ol.ArrowRenderOptions} renderOptions Render options.
  * @param {CanvasRenderingContext2D} context The context.
  * @param {number} x The origin for the symbol (x).
  * @param {number} y The origin for the symbol (y).

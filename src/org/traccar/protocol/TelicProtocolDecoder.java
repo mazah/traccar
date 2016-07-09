@@ -15,15 +15,15 @@
  */
 package org.traccar.protocol;
 
-import java.net.SocketAddress;
-import java.util.regex.Pattern;
 import org.jboss.netty.channel.Channel;
 import org.traccar.BaseProtocolDecoder;
 import org.traccar.helper.DateBuilder;
 import org.traccar.helper.Parser;
 import org.traccar.helper.PatternBuilder;
-import org.traccar.model.Event;
 import org.traccar.model.Position;
+
+import java.net.SocketAddress;
+import java.util.regex.Pattern;
 
 public class TelicProtocolDecoder extends BaseProtocolDecoder {
 
@@ -51,7 +51,9 @@ public class TelicProtocolDecoder extends BaseProtocolDecoder {
             .number("(d+),")                     // course
             .number("(d+),")                     // satellites
             .expression("(?:[^,]*,){7}")
-            .number("(d+),")
+            .number("(d+),")                     // battery
+            .expression("[^,]*,")
+            .number("(d+),")                     // external
             .any()
             .compile();
 
@@ -72,7 +74,7 @@ public class TelicProtocolDecoder extends BaseProtocolDecoder {
         }
         position.setDeviceId(getDeviceId());
 
-        position.set(Event.KEY_TYPE, parser.next());
+        position.set(Position.KEY_TYPE, parser.next());
 
         DateBuilder dateBuilder = new DateBuilder()
                 .setDateReverse(parser.nextInt(), parser.nextInt(), parser.nextInt())
@@ -93,8 +95,9 @@ public class TelicProtocolDecoder extends BaseProtocolDecoder {
         position.setSpeed(parser.nextDouble());
         position.setCourse(parser.nextDouble());
 
-        position.set(Event.KEY_SATELLITES, parser.next());
-        position.set(Event.KEY_BATTERY, parser.nextInt());
+        position.set(Position.KEY_SATELLITES, parser.next());
+        position.set(Position.KEY_BATTERY, 3.4 + parser.nextInt() * 0.00345);
+        position.set(Position.KEY_POWER, 6.0 + parser.nextInt() * 0.125);
 
         return position;
     }

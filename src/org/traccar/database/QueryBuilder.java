@@ -15,6 +15,14 @@
  */
 package org.traccar.database;
 
+import org.traccar.Context;
+import org.traccar.helper.Log;
+import org.traccar.model.MiscFormatter;
+
+import javax.json.Json;
+import javax.json.JsonReader;
+import javax.json.stream.JsonParsingException;
+import javax.sql.DataSource;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,13 +40,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.json.Json;
-import javax.json.JsonReader;
-import javax.json.stream.JsonParsingException;
-import javax.sql.DataSource;
-import org.traccar.Context;
-import org.traccar.helper.Log;
-import org.traccar.model.MiscFormatter;
 
 public final class QueryBuilder {
 
@@ -356,10 +357,13 @@ public final class QueryBuilder {
             processors.add(new ResultSetProcessor<T>() {
                 @Override
                 public void process(T object, ResultSet resultSet) throws SQLException {
-                    try (JsonReader reader = Json.createReader(new StringReader(resultSet.getString(name)))) {
-                        method.invoke(object, MiscFormatter.fromJson(reader.readObject()));
-                    } catch (IllegalAccessException | InvocationTargetException | JsonParsingException error) {
-                        Log.warning(error);
+                    String value = resultSet.getString(name);
+                    if (value != null) {
+                        try (JsonReader reader = Json.createReader(new StringReader(value))) {
+                            method.invoke(object, MiscFormatter.fromJson(reader.readObject()));
+                        } catch (IllegalAccessException | InvocationTargetException | JsonParsingException error) {
+                            Log.warning(error);
+                        }
                     }
                 }
             });

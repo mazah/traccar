@@ -32,7 +32,7 @@ Ext.define('Traccar.view.CommandDialog', {
             fieldLabel: Strings.commandType,
             store: 'CommandTypes',
             displayField: 'name',
-            valueField: 'key',
+            valueField: 'type',
             listeners: {
                 select: 'onSelect'
             }
@@ -55,16 +55,12 @@ Ext.define('Traccar.view.CommandDialog', {
                 valueField: 'factor'
             }]
         }, {
-            xtype: 'fieldcontainer',
-            reference: 'paramCustomCommand',
-            name: 'attributes',
+            xtype: 'textfield',
+            reference: 'paramCustom',
+            fieldLabel: Strings.commandCustom,
+            name: 'customCommand',
             hidden: true,
-
-            items: [{
-                xtype: 'textfield',
-                fieldLabel: Strings.commandCustom,
-                name: 'cmd'
-            }]
+            allowBlank: false
         }]
     },
 

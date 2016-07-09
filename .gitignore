@@ -4,6 +4,5 @@ nbactions.xml
 .project
 .settings
 .idea
-web/.idea
-.idea
-traccar.iml
+*.iml
+.DS_Store
