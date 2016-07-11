@@ -356,7 +356,7 @@ public class DataManager implements IdentityManager {
         boolean forceUpdate;
         devicesLock.readLock().lock();
         try {
-            forceUpdate = devicesById.values().isEmpty();
+            forceUpdate = devicesById.isEmpty();
         } finally {
             devicesLock.readLock().unlock();
         }
