@@ -301,6 +301,10 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
                         decodeStatus(position, buf);
                     }
 
+                    if (hasMsg(type)) {
+                	decodeMsg(position, buf);
+                    }
+
                     if (type == MSG_GPS_LBS_1 && buf.readableBytes() == 4 + 6) {
                         position.set(Position.KEY_ODOMETER, buf.readUnsignedInt());
                     }
@@ -323,10 +327,6 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
 
                 }
                 
-                if (hasMsg(type)) {
-                	decodeMsg(position, buf);
-                }
-
             }
 
         } else if (header == 0x7979) {
