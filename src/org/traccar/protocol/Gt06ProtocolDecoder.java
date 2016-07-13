@@ -173,41 +173,41 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
 
         int flags = buf.readUnsignedByte();
 
-        position.set(Event.KEY_ACTIVATED, BitUtil.check(flags, 0));
-        position.set(Event.KEY_IGNITION, BitUtil.check(flags, 1));
-        position.set(Event.KEY_CHARGE, BitUtil.check(flags, 2));
+        position.set(Position.KEY_ACTIVATED, BitUtil.check(flags, 0));
+        position.set(Position.KEY_IGNITION, BitUtil.check(flags, 1));
+        position.set(Position.KEY_CHARGE, BitUtil.check(flags, 2));
         if ((flags & STATUS_ALARM_NORMAL) == STATUS_ALARM_NORMAL) {
-        	position.set(Event.KEY_STATUS_ALARMTYPE, "normal");
+        	position.set(Position.KEY_STATUS_ALARMTYPE, "normal");
         } else if ((flags & STATUS_ALARM_SHOCK) == STATUS_ALARM_SHOCK) {
-        	position.set(Event.KEY_STATUS_ALARMTYPE, "Shock");
+        	position.set(Position.KEY_STATUS_ALARMTYPE, "Shock");
         } else if ((flags & STATUS_ALARM_PWR) == STATUS_ALARM_PWR) {
-        	position.set(Event.KEY_STATUS_ALARMTYPE, "Power");
+        	position.set(Position.KEY_STATUS_ALARMTYPE, "Power");
         } else if ((flags & STATUS_ALARM_BAT) == STATUS_ALARM_BAT) {
-        	position.set(Event.KEY_STATUS_ALARMTYPE, "Bat");
+        	position.set(Position.KEY_STATUS_ALARMTYPE, "Bat");
         } else if ((flags & STATUS_ALARM_SOS) == STATUS_ALARM_SOS) {
-        	position.set(Event.KEY_STATUS_ALARMTYPE, "SOS");
+        	position.set(Position.KEY_STATUS_ALARMTYPE, "SOS");
         }
-        position.set(Event.KEY_ALARMTYPE, BitUtil.check(flags, 3));
-        position.set(Event.KEY_GPSTRACK, BitUtil.check(flags, 6));
-        position.set(Event.KEY_RELAY, BitUtil.check(flags, 7));
-        position.set(Event.KEY_STATUS, flags);
-        position.set(Event.KEY_POWER, buf.readUnsignedByte());
-        position.set(Event.KEY_GSM, buf.readUnsignedByte());
+        position.set(Position.KEY_ALARMTYPE, BitUtil.check(flags, 3));
+        position.set(Position.KEY_GPSTRACK, BitUtil.check(flags, 6));
+        position.set(Position.KEY_RELAY, BitUtil.check(flags, 7));
+        position.set(Position.KEY_STATUS, flags);
+        position.set(Position.KEY_POWER, buf.readUnsignedByte());
+        position.set(Position.KEY_GSM, buf.readUnsignedByte());
         int alarm = buf.readUnsignedByte();
         if ((alarm & ALARM_NORMAL) == ALARM_NORMAL) {
-        	position.set(Event.KEY_ALARMTYPE, "normal");
+        	position.set(Position.KEY_ALARMTYPE, "normal");
         } else if ((alarm & ALARM_SHOCK) == ALARM_SHOCK) {
-        	position.set(Event.KEY_ALARMTYPE, "Shock");
+        	position.set(Position.KEY_ALARMTYPE, "Shock");
         } else if ((alarm & ALARM_PWR) == ALARM_PWR) {
-        	position.set(Event.KEY_ALARMTYPE, "Power");
+        	position.set(Position.KEY_ALARMTYPE, "Power");
         } else if ((alarm & ALARM_SOS) == ALARM_SOS) {
-        	position.set(Event.KEY_ALARMTYPE, "SOS");
+        	position.set(Position.KEY_ALARMTYPE, "SOS");
         } else if ((alarm & ALARM_FENCEIN) == ALARM_FENCEIN) {
-        	position.set(Event.KEY_ALARMTYPE, "Fence IN");
+        	position.set(Position.KEY_ALARMTYPE, "Fence IN");
         } else if ((alarm & ALARM_FENCEOUT) == ALARM_FENCEOUT) {
-        	position.set(Event.KEY_ALARMTYPE, "Fence OUT");
+        	position.set(Position.KEY_ALARMTYPE, "Fence OUT");
         }
-        position.set(Event.KEY_LANG, buf.readUnsignedByte());
+        position.set(Position.KEY_LANG, buf.readUnsignedByte());
     }
     
     private void decodeMsg(Position position, ChannelBuffer buf) {
@@ -215,7 +215,7 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
     	int serverFlag = buf.readUnsignedShort(); //Not implemented
     	String cmdResponseString = new String(buf.readBytes(cmdResponseLength-4).array());
     	Log.debug(cmdResponseString);
-    	position.set(Event.KEY_RESPONSE, cmdResponseString);
+    	position.set(Position.KEY_RESPONSE, cmdResponseString);
     }
 
     @Override
