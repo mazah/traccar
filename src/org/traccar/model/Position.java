@@ -52,6 +52,13 @@ public class Position extends Message {
     public static final String KEY_RPM = "rpm";
     public static final String KEY_VIN = "vin";
     public static final String KEY_APPROXIMATE = "approximate";
+    public static final String KEY_ACTIVATED = "activated";
+    public static final String KEY_LANG = "language";
+    public static final String KEY_RELAY = "relay";
+    public static final String KEY_GPSTRACK = "gps tracking";
+    public static final String KEY_STATUS_ALARMTYPE = "status alarm type";
+    public static final String KEY_ALARMTYPE = "alarm type";
+    public static final String KEY_RESPONSE = "Command response";
     public static final String KEY_THROTTLE = "throttle";
     public static final String KEY_MOTION = "motion";
 
