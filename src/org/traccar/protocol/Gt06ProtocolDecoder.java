@@ -205,14 +205,6 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
         }
         position.set(Position.KEY_LANG, buf.readUnsignedByte());
     }
-    
-    private void decodeMsg(Position position, ChannelBuffer buf) {
-    	int cmdResponseLength = buf.readUnsignedByte(); // Command length
-    	int serverFlag = buf.readUnsignedShort(); //Not implemented
-    	String cmdResponseString = new String(buf.readBytes(cmdResponseLength-4).array());
-    	Log.debug(cmdResponseString);
-    	position.set(Position.KEY_RESPONSE, cmdResponseString);
-    }
 
     @Override
     protected Object decode(
@@ -256,7 +248,6 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
             } else if (hasDeviceId()) {
 
                 if (type == MSG_STRING) {
-
                     Position position = new Position();
                     position.setDeviceId(getDeviceId());
                     position.setProtocol(getProtocolName());
