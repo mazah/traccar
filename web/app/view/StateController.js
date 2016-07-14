@@ -99,7 +99,7 @@ Ext.define('Traccar.view.StateController', {
                         }),
                         value: Traccar.AttributeFormatter.getFormatter(key)(attributes[key])
                     }));
-                    if (key == "Command response") {
+                    if (key == "command") {
                         Ext.override(Ext.window.Toast, {
                             slideInDuration: 10
                         });
