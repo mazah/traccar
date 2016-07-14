@@ -78,7 +78,7 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
     public static final int MSG_INFO = 0x94;
 
     private static boolean isSupported(int type) {
-        return hasGps(type) || hasLbs(type) || hasStatus(type) || hasMsg(type);
+        return hasGps(type) || hasLbs(type) || hasStatus(type);
     }
 
     private static boolean hasGps(int type) {
@@ -97,10 +97,6 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
                 || type == MSG_GPS_LBS_STATUS_1 || type == MSG_GPS_LBS_STATUS_2 || type == MSG_GPS_LBS_STATUS_3;
     }
     
-    private static boolean hasMsg(int type) {
-    	return type == MSG_STRING;
-    }
-
     private static void sendResponse(Channel channel, int type, int index) {
         if (channel != null) {
             ChannelBuffer response = ChannelBuffers.dynamicBuffer();
@@ -299,10 +295,6 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
 
                     if (hasStatus(type)) {
                         decodeStatus(position, buf);
-                    }
-
-                    if (hasMsg(type)) {
-                	decodeMsg(position, buf);
                     }
 
                     if (type == MSG_GPS_LBS_1 && buf.readableBytes() == 4 + 6) {
