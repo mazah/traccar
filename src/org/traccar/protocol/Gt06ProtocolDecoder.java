@@ -29,6 +29,7 @@ import org.traccar.model.Position;
 
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.TimeZone;
 
 public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
@@ -251,8 +252,12 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
                     Position position = new Position();
                     position.setDeviceId(getDeviceId());
                     position.setProtocol(getProtocolName());
-
+                    
                     getLastLocation(position, null);
+                    
+                    DateBuilder dateBuilder = new DateBuilder(new Date(), timeZone);
+                    position.setTime(dateBuilder.getDate());
+
 
                     int commandLength = buf.readUnsignedByte();
 
@@ -278,6 +283,8 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
                         decodeGps(position, buf);
                     } else {
                         getLastLocation(position, null);
+                        DateBuilder dateBuilder = new DateBuilder(new Date(), timeZone);
+                        position.setTime(dateBuilder.getDate());
                     }
 
                     if (hasLbs(type)) {
@@ -327,7 +334,9 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
                     position.setProtocol(getProtocolName());
 
                     getLastLocation(position, null);
-
+                    DateBuilder dateBuilder = new DateBuilder(new Date(), timeZone);
+                    position.setTime(dateBuilder.getDate());
+                    
                     int flags = buf.readUnsignedByte();
 
                     position.set("door", BitUtil.check(flags, 0));
