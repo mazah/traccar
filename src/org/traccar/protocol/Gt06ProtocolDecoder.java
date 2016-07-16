@@ -278,11 +278,12 @@ public class Gt06ProtocolDecoder extends BaseProtocolDecoder {
                     position.setType(Integer.toString(type));
                     position.setDeviceId(getDeviceId());
                     position.setProtocol(getProtocolName());
-                    getLastLocation(position, null);
+                    
                     
                     if (hasGps(type)) {
                         decodeGps(position, buf);
                     } else {
+                    	getLastLocation(position, null);
                         //Why do we need this since above getLastLocation in BaseProtocolDecoder adds a timestamp
                         DateBuilder dateBuilder = new DateBuilder(new Date(), timeZone);
                         position.setTime(dateBuilder.getDate());
