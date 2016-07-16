@@ -88,6 +88,7 @@ public abstract class BaseProtocolDecoder extends ExtendedObjectDecoder {
             position.setSpeed(last.getSpeed());
             position.setCourse(last.getCourse());
             position.setAddress(last.getAddress());
+            position.setAttributes(last.getAttributes());
         } else {
             position.setFixTime(new Date(0));
         }
